@@ -8,6 +8,7 @@ import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import com.github.mikephil.charting.components.YAxis
 import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
@@ -15,7 +16,7 @@ import kotlinx.android.synthetic.main.activity_main.*
 
 
 class MainActivity : AppCompatActivity() {
-    var pulseCountFor60sec = 0f
+    var pulseCountForMidRange = 0f
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -43,16 +44,28 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun updateChart() {
-        var i = 0f
+        var seconds = 0f
+        val range = 20
+        val midRange = 4
+        val rawData = ArrayList<Float>()
+
         val entries = ArrayList<Entry>()
         val handler = Handler()
         handler.post(object : Runnable {
             override fun run() {
-                val rand = (0 + Math.random() * 40).toFloat()
-                entries.add(Entry(i, pulseCountFor60sec / 60))
+                rawData.add(pulseCountForMidRange / midRange)
 
-                if (entries.count() > 60) {
-                    pulseCountFor60sec -= entries[0].y
+                if (rawData.count() > midRange) {
+                    var sum = 0f
+                    for (j in rawData.count() - midRange until rawData.count()) {
+                        sum += rawData[j]
+                    }
+                    entries.add(Entry(seconds, sum / midRange))
+                    pulseCountForMidRange -= rawData[0]
+                    rawData.removeAt(0)
+                }
+
+                if (entries.count() > range) {
                     entries.removeAt(0)
                 }
                 val vl = LineDataSet(entries, "My Type")
@@ -65,7 +78,7 @@ class MainActivity : AppCompatActivity() {
                 lineChart.notifyDataSetChanged()
                 lineChart.invalidate()
 
-                i += 1f
+                seconds += 1f
                 handler.postDelayed(this, 1000) // set time here to refresh textView
             }
         })
@@ -77,7 +90,7 @@ class MainActivity : AppCompatActivity() {
         handler.post(object : Runnable {
             override fun run() {
                 pulsarRadio.isChecked = true
-                pulseCountFor60sec += 1
+                pulseCountForMidRange += 1
                 when {
                     randMillis in 100..3000 -> {
                         randMillis += (-100..100).random()
@@ -116,5 +129,7 @@ class MainActivity : AppCompatActivity() {
 
         lineChart.description.text = "Days"
         lineChart.setNoDataText("No forex yet!")
+
+        lineChart.setVisibleYRangeMinimum(10f, YAxis.AxisDependency.LEFT)
     }
 }
