@@ -68,6 +68,28 @@ class MainActivity : AppCompatActivity() {
         })
     }
 
+    private fun pulseCounter() {
+        val handler = Handler()
+        var randMillis = (100..3000).random().toLong()
+        handler.post(object : Runnable {
+            override fun run() {
+
+                when {
+                    randMillis in 100..3000 -> {
+                        randMillis += (-100..100).random()
+                    }
+                    randMillis > 3000 -> {
+                        randMillis += (-100..0).random()
+                    }
+                    randMillis < 100 -> {
+                        randMillis += (0..100).random()
+                    }
+                }
+                handler.postDelayed(this, randMillis)
+            }
+        })
+    }
+
     private fun addBTDevicesToSpinner() {
         val mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
         val pairedDevices = mBluetoothAdapter.bondedDevices
