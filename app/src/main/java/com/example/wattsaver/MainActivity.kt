@@ -39,7 +39,19 @@ class MainActivity : AppCompatActivity() {
                     updateChart()
                 }
             }
+        }
 
+        calculateButton.setOnClickListener {
+            if (limitForMonthEditText.text.toString() != "" && costEditText.text.toString() != ""){
+                val limitForMonth = limitForMonthEditText.text.toString().toFloat()
+                val cost = costEditText.text.toString().toFloat()
+                val limitForDay = limitForMonth / 30.5
+                limForDayTextView.text = "$limitForDay kW/h"
+                val limitForSec = 1000 * limitForDay / 24 / 60 / 60
+                limitForSecTextView.text = "$limitForSec W/h"
+                val costForMonth = cost * limitForMonth
+                costForMonthTextView.text = costForMonth.toString()
+            }
         }
     }
 
@@ -68,7 +80,7 @@ class MainActivity : AppCompatActivity() {
                 if (entries.count() > range) {
                     entries.removeAt(0)
                 }
-                val vl = LineDataSet(entries, "My Type")
+                val vl = LineDataSet(entries, "W/h")
 
                 vl.setDrawValues(false)
                 vl.setDrawFilled(true)
@@ -86,7 +98,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun pulseGenerator() {
         val handler = Handler()
-        var randMillis = (100..7000).random().toLong()
+        var randMillis = (100..2000).random().toLong()
         handler.post(object : Runnable {
             override fun run() {
                 pulsarRadio.isChecked = true
@@ -127,8 +139,8 @@ class MainActivity : AppCompatActivity() {
         lineChart.setTouchEnabled(true)
         lineChart.setPinchZoom(true)
 
-        lineChart.description.text = "Days"
-        lineChart.setNoDataText("No forex yet!")
+        lineChart.description.text = "sec"
+        lineChart.setNoDataText("No data yet!")
 
         lineChart.setVisibleYRangeMinimum(10f, YAxis.AxisDependency.LEFT)
     }
