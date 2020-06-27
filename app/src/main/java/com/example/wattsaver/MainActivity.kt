@@ -8,7 +8,6 @@ import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import com.github.mikephil.charting.animation.Easing
 import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
@@ -16,6 +15,7 @@ import kotlinx.android.synthetic.main.activity_main.*
 
 
 class MainActivity : AppCompatActivity() {
+    var pulseCountFor60sec = 0f
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -30,6 +30,8 @@ class MainActivity : AppCompatActivity() {
                 val selectedItem = parent?.getItemAtPosition(position).toString()
                 if (selectedItem == "Test_connection") {
                     Toast.makeText(applicationContext, "Connected successfully!", Toast.LENGTH_SHORT).show()
+
+                    pulseGenerator()
 
                     initChartSettings()
 
@@ -47,9 +49,10 @@ class MainActivity : AppCompatActivity() {
         handler.post(object : Runnable {
             override fun run() {
                 val rand = (0 + Math.random() * 40).toFloat()
-                entries.add(Entry(i, rand))
+                entries.add(Entry(i, pulseCountFor60sec / 60))
 
-                if (entries.count() > 20) {
+                if (entries.count() > 60) {
+                    pulseCountFor60sec -= entries[0].y
                     entries.removeAt(0)
                 }
                 val vl = LineDataSet(entries, "My Type")
@@ -68,12 +71,13 @@ class MainActivity : AppCompatActivity() {
         })
     }
 
-    private fun pulseCounter() {
+    private fun pulseGenerator() {
         val handler = Handler()
-        var randMillis = (100..3000).random().toLong()
+        var randMillis = (100..7000).random().toLong()
         handler.post(object : Runnable {
             override fun run() {
-
+                pulsarRadio.isChecked = true
+                pulseCountFor60sec += 1
                 when {
                     randMillis in 100..3000 -> {
                         randMillis += (-100..100).random()
@@ -85,6 +89,7 @@ class MainActivity : AppCompatActivity() {
                         randMillis += (0..100).random()
                     }
                 }
+                pulsarRadio.isChecked = false
                 handler.postDelayed(this, randMillis)
             }
         })
